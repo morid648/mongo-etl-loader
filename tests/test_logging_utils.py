@@ -29,8 +29,3 @@ def test_finish_sets_duration_and_timestamps():
     assert summary.ended_at is not None
     assert summary.duration_seconds is not None
     assert summary.duration_seconds >= 0
-
-
-def test_deliberate_ci_failure_sanity_check():
-    """Temporary: verifies CI actually fails the build on a broken test (task 4.4.4). Reverted immediately after confirming red."""
-    assert 1 == 2
