@@ -1,0 +1,14 @@
+source:
+  type: csv
+  path: tests/fixtures/valid_orders.csv
+
+target:
+  collection: orders_test
+
+mapping:
+  fields:
+    - source: order_id
+      target: order_id
+      type: not_a_real_type
+
+write_mode: upsert

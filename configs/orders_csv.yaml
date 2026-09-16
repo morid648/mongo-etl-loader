@@ -1,0 +1,46 @@
+# Sample config: load orders_*.csv from sample_data/ into the `orders` collection.
+source:
+  type: csv
+  path: sample_data
+  glob: "orders_*.csv"
+  delimiter: ","
+  encoding: "utf-8"
+  has_header: true
+  on_malformed_row: skip
+  move_processed_to: processed
+  manifest_path: .state/orders_processed_files.json
+
+target:
+  collection: orders
+  unique_key: order_id
+  indexes:
+    - fields: [order_date]
+      unique: false
+
+mapping:
+  fields:
+    - source: order_id
+      target: order_id
+      type: str
+      required: true
+    - source: order_date
+      target: order_date
+      type: date
+      required: true
+    - source: customer_email
+      target: customer_email
+      type: str
+      required: false
+    - source: amount
+      target: amount
+      type: decimal
+      required: true
+      default: "0"
+  nested:
+    - target: address
+      fields:
+        address_line1: line1
+        address_city: city
+
+write_mode: upsert
+batch_size: 500

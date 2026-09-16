@@ -1,0 +1,4 @@
+order_id,order_date,amount,address_line1,address_city
+3001,2024-03-01,15.00,3 Third St,Gammaville
+3002,2024-03-02,25.00
+3003,2024-03-03,35.00,4 Fourth St,Deltaville

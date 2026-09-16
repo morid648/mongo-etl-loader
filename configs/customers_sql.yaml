@@ -1,0 +1,43 @@
+# Sample config: load the `customers` table (Postgres) into the `customers` collection,
+# incrementally via the `updated_at` watermark column.
+source:
+  type: sql
+  connection_env: SQL_CONN_STRING
+  table: customers
+  watermark_column: updated_at
+  chunk_size: 5000
+  max_retries: 3
+  state_path: .state/customers_watermark.json
+
+target:
+  collection: customers
+  unique_key: customer_id
+  indexes:
+    - fields: [email]
+      unique: false
+
+mapping:
+  fields:
+    - source: id
+      target: customer_id
+      type: str
+      required: true
+    - source: first_name
+      target: first_name
+      type: str
+      required: true
+    - source: last_name
+      target: last_name
+      type: str
+      required: true
+    - source: email
+      target: email
+      type: str
+      required: false
+    - source: updated_at
+      target: updated_at
+      type: datetime
+      required: true
+
+write_mode: upsert
+batch_size: 1000

@@ -1,0 +1,37 @@
+source:
+  type: csv
+  path: tests/fixtures/valid_orders.csv
+  delimiter: ","
+  encoding: "utf-8"
+  has_header: true
+  on_malformed_row: skip
+  move_processed_to: null
+  manifest_path: .state/test_manifest.json
+
+target:
+  collection: orders_test
+  unique_key: order_id
+
+mapping:
+  fields:
+    - source: order_id
+      target: order_id
+      type: str
+      required: true
+    - source: order_date
+      target: order_date
+      type: date
+      required: true
+    - source: amount
+      target: amount
+      type: decimal
+      required: true
+      default: "0"
+  nested:
+    - target: address
+      fields:
+        address_line1: line1
+        address_city: city
+
+write_mode: upsert
+batch_size: 100

@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[dev]"
+      - run: ruff check .
+      - run: black --check .
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[dev,postgres]"
+      - run: pytest tests/ -v
+
+  smoke-test:
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Start Mongo + Postgres via docker compose
+        run: docker compose up -d mongo postgres
+
+      - name: Wait for services to be healthy
+        run: |
+          timeout 60 bash -c 'until [ "$(docker inspect -f "{{.State.Health.Status}}" $(docker compose ps -q mongo))" = "healthy" ]; do sleep 2; done'
+          timeout 60 bash -c 'until [ "$(docker inspect -f "{{.State.Health.Status}}" $(docker compose ps -q postgres))" = "healthy" ]; do sleep 2; done'
+
+      - run: pip install -e ".[dev,postgres]"
+
+      - name: End-to-end demo load
+        env:
+          MONGO_URI: mongodb://localhost:27017
+          MONGO_DB: portfolio_load_ci
+          SQL_CONN_STRING: postgresql+psycopg2://postgres:postgres@localhost:5432/postgres
+        run: |
+          loader run --source csv --config configs/orders_csv.yaml
+          loader run --source sql --config configs/customers_sql.yaml
+          loader status --last 5
+
+      - name: Confirm non-zero exit on induced failure
+        run: |
+          if loader run --source csv --config configs/does_not_exist.yaml; then
+            echo "expected failure but command succeeded" >&2
+            exit 1
+          fi
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v
