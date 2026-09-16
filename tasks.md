@@ -137,10 +137,10 @@ Depends on: Phases 1–3 (adds resilience, tooling, and CI around the now-functi
 ### 4.4 CI pipeline
 - [x] 4.4.1 Add GitHub Actions workflow: lint (ruff/black check) on push — [.github/workflows/ci.yml](.github/workflows/ci.yml); lint ruleset pinned to `["E","F","I"]` in [pyproject.toml](pyproject.toml) (ruff's ambient default pulled in DTZ/UP/C4 rules not relevant to this project); verified locally with `ruff check .` and `black --check .` (both pass, 21 files)
 - [x] 4.4.2 Add unit test job (pytest) on push — same workflow, `pytest tests/ -v`; verified locally (48/48 pass)
-- [x] 4.4.3 Add smoke-test job: spin up throwaway Mongo (+ Postgres) containers via compose, run an end-to-end demo load, assert non-zero exit on induced failure and zero exit on success — workflow's exact commands (health-check wait loop, both loads, `status`, induced-failure check) run and verified locally line-for-line once Docker Desktop was available; only the literal "runs inside GitHub Actions" part is still unverified (no GitHub remote for this repo)
-- [ ] 4.4.4 Confirm CI fails the build on lint or test failure (sanity-check by introducing then reverting a deliberate break) — still needs a real GitHub Actions run to confirm the workflow YAML itself (job dependencies, failure propagation) behaves correctly on GitHub's runners; local command-level verification (4.4.3) doesn't cover this
+- [x] 4.4.3 Add smoke-test job: spin up throwaway Mongo (+ Postgres) containers via compose, run an end-to-end demo load, assert non-zero exit on induced failure and zero exit on success — verified for real on GitHub Actions ([run 35065963555](https://github.com/morid648/mongodb-load/actions/runs/35065963555)): `test` (28s), `lint` (23s), `smoke-test` (55s) all passed on a fresh GitHub-hosted runner after pushing to https://github.com/morid648/mongodb-load
+- [x] 4.4.4 Confirm CI fails the build on lint or test failure (sanity-check by introducing then reverting a deliberate break) — pushed a commit with a deliberately failing test ([run 35066130537](https://github.com/morid648/mongodb-load/actions/runs/35066130537)): `test` job failed on the broken assertion, `lint` job *also* failed (an incidental line-length violation in the test's own docstring), and `smoke-test` was correctly skipped since it depends on both — then reverted and confirmed CI went back to green ([run 35066236697](https://github.com/morid648/mongodb-load/actions/runs/35066236697), all 3 jobs `success`)
 
-**Note on 4.4.4:** this repo has no GitHub remote yet. Once you push, this should get one real CI run to confirm the workflow fails the build correctly (e.g. by temporarily breaking a test).
+**Phase 4 fully closed.** Repo pushed to GitHub (private): https://github.com/morid648/mongodb-load
 
 **Phase 4 exit criteria (PRD §12):** `docker compose up` + one command runs an end-to-end demo load in CI. ✅ when 4.3.3 and 4.4.3 pass.
 
@@ -186,5 +186,4 @@ Mapped to the tasks that satisfy each item — use this to confirm "done" once a
 
 ## Remaining follow-ups (not yet done)
 
-- **5.6 Tag v1.0 / final commit** — this repo has no git commits yet. Ask before committing/tagging (see [feedback: never commit without explicit ask]).
-- **4.4.4** — the CI workflow's commands are proven correct locally (line-for-line against live Dockerized Mongo/Postgres), but it hasn't had a real run on GitHub's own Actions runners yet, since this repo has no GitHub remote configured. Push to GitHub and watch one real CI run (including a deliberately-broken-then-fixed test) to close this out.
+- **5.6 Tag v1.0 release** — repo is committed and pushed (https://github.com/morid648/mongodb-load); a `v1.0` git tag hasn't been cut yet. Ask before tagging.

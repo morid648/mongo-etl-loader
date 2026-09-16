@@ -253,4 +253,4 @@ black --check .
 
 ## Status
 
-See [tasks.md](tasks.md) for the full phased build log. All phases are implemented and unit-tested; live end-to-end smoke tests have been run against a real MongoDB Atlas cluster, a real Supabase Postgres instance, and the local `docker compose` stack (Mongo + Postgres, including Postgres's auto-seed-on-init). The only thing left unverified is a real GitHub Actions run of the CI workflow — its commands are proven correct locally, but this repo has no GitHub remote configured yet.
+All phases complete and verified. See [tasks.md](tasks.md) for the full phased build log, [docs/TEST_RESULTS.md](docs/TEST_RESULTS.md) for the full test breakdown, and [docs/ROOT_CAUSE_ANALYSIS.md](docs/ROOT_CAUSE_ANALYSIS.md) for every bug found and fixed along the way. Verified live against: MongoDB Atlas, Supabase Postgres, the local `docker compose` stack, and — with a deliberately-broken-then-reverted test to confirm CI actually catches failures — [GitHub Actions](https://github.com/morid648/mongodb-load/actions) on the repo itself.

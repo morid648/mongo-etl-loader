@@ -81,23 +81,19 @@ Everything below was run against **real** infrastructure, not mocks: a user-prov
 | Re-running the CSV load in a **fresh, ephemeral** container (`--rm`, no `.state/` volume) | ✅ `db.orders.countDocuments({})` still `6` afterward — confirms idempotency holds even when the manifest/watermark state doesn't persist at all between invocations, purely on Mongo's upsert semantics |
 | `docker compose run --rm loader status --last N` | ✅ correctly listed prior runs from the containerized Mongo's `_pipeline_runs` collection |
 
-### CI workflow commands, verified locally
+### CI workflow, verified on real GitHub Actions runners
 
-The [.github/workflows/ci.yml](../.github/workflows/ci.yml) `smoke-test` job's exact shell commands were run locally, line-for-line, once Docker was available — this isn't the same as a real GitHub Actions execution (no remote is configured for this repo yet), but it does confirm the workflow's *logic* is correct rather than just plausible-looking YAML:
+The [.github/workflows/ci.yml](../.github/workflows/ci.yml) workflow was pushed to https://github.com/morid648/mongodb-load and run for real on GitHub-hosted runners — not just locally:
 
-```bash
-docker compose up -d mongo postgres
-# health-check wait loop (docker inspect -f "{{.State.Health.Status}}" ...) — both reported healthy
-loader run --source csv --config configs/orders_csv.yaml   # succeeded
-loader run --source sql --config configs/customers_sql.yaml # succeeded
-loader status --last 5                                       # correctly showed both runs
-# induced-failure check:
-loader run --source csv --config configs/does_not_exist.yaml
-# → "config error: config file not found: configs\does_not_exist.yaml", non-zero exit — correctly detected as a failure
-docker compose down -v
-```
+| Run | Trigger | `test` | `lint` | `smoke-test` | Conclusion |
+|---|---|---|---|---|---|
+| [35065963555](https://github.com/morid648/mongodb-load/actions/runs/35065963555) | Initial push | ✅ 28s | ✅ 23s | ✅ 55s | **success** |
+| [35066130537](https://github.com/morid648/mongodb-load/actions/runs/35066130537) | Deliberately broken test pushed | ❌ (broken assertion) | ❌ (incidental line-length violation in the test's own docstring) | ⏭️ skipped (depends on both) | **failure** — as expected |
+| [35066236697](https://github.com/morid648/mongodb-load/actions/runs/35066236697) | Revert pushed | ✅ | ✅ | ✅ | **success** — confirms the CI correctly went back to green |
 
-All steps behaved exactly as the workflow expects. What's still unverified is the literal "runs on GitHub's own Actions runners" part — see [tasks.md](../tasks.md) for that as an explicit open follow-up.
+The middle row (task 4.4.4's requirement) is the important one: it's not enough for CI to pass when the code is fine — it has to actually **fail** the build when something's broken, which it did, on two independent checks (a real test failure and an incidental lint violation), and correctly gated the downstream `smoke-test` job behind both.
+
+The `smoke-test` job's own steps (health-check wait loop, both real loads against Dockerized Mongo/Postgres, `status`, the induced-failure check) all completed successfully inside the GitHub Actions run itself — see run 35065963555 above for the full job log.
 
 ## Summary
 
@@ -107,4 +103,4 @@ All steps behaved exactly as the workflow expects. What's still unverified is th
 | Lint (`ruff`) / format (`black`) | ✅ clean |
 | Live MongoDB Atlas + Supabase Postgres | ✅ full + incremental loads, idempotency, malformed-row handling all verified |
 | Live Docker Compose (Mongo + Postgres + loader image) | ✅ full stack verified, including auto-seed and idempotency across ephemeral containers |
-| GitHub Actions (real runner execution) | ⏳ not yet — no GitHub remote configured for this repo |
+| GitHub Actions (real runner execution) | ✅ verified — passes on good code, fails on broken code, gates `smoke-test` correctly |
