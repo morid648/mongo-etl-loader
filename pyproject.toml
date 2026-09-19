@@ -13,7 +13,6 @@ authors = [{ name = "Anshul" }]
 dependencies = [
     "sqlalchemy>=2.0",
     "pymongo>=4.6,<4.9",  # mongomock 4.3.0 (latest) doesn't support pymongo>=4.9's bulk UpdateOne 'sort' kwarg
-    "pandas>=2.1",
     "pyyaml>=6.0",
     "pydantic>=2.5",
     "typer>=0.9",

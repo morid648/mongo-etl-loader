@@ -18,7 +18,7 @@ from loader.transform import RowRejected, transform_row
 logger = logging.getLogger("loader.pipeline")
 
 
-def run_csv_pipeline(config: PipelineConfig, config_path: str = "") -> RunSummary:
+def run_csv_pipeline(config: PipelineConfig) -> RunSummary:
     assert isinstance(config.source, CsvSourceConfig)
     summary = RunSummary.start(
         source=f"csv:{config.source.path}",
@@ -66,7 +66,7 @@ def run_csv_pipeline(config: PipelineConfig, config_path: str = "") -> RunSummar
     return summary
 
 
-def run_sql_pipeline(config: PipelineConfig, config_path: str = "") -> RunSummary:
+def run_sql_pipeline(config: PipelineConfig) -> RunSummary:
     assert isinstance(config.source, SqlSourceConfig)
     summary = RunSummary.start(
         source=f"sql:{config.source.table or config.source.query}",

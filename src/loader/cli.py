@@ -36,11 +36,11 @@ def run(
     if source == "csv":
         from loader.pipeline import run_csv_pipeline
 
-        summary = run_csv_pipeline(pipeline_config, config)
+        summary = run_csv_pipeline(pipeline_config)
     elif source == "sql":
         from loader.pipeline import run_sql_pipeline
 
-        summary = run_sql_pipeline(pipeline_config, config)
+        summary = run_sql_pipeline(pipeline_config)
     else:
         typer.echo(f"unknown source type: {source}", err=True)
         raise typer.Exit(code=1)

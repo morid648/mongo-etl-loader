@@ -70,10 +70,6 @@ class TargetConfig(BaseModel):
     unique_key: str | None = None
     indexes: list[IndexSpec] = Field(default_factory=list)
 
-    @model_validator(mode="after")
-    def _upsert_needs_unique_key(self) -> "TargetConfig":
-        return self
-
 
 class CsvSourceConfig(BaseModel):
     type: Literal["csv"] = "csv"
